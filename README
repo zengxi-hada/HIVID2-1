@@ -1,5 +1,79 @@
-some format errors occur in step4
-almost the fastq format problem
-find the runbwasw.... basename
-find the Uniq2.... read_id 
-find the Uniq2.... read_clean
+A Step-to-step protocol of the HIVID2 pipeline
+
+The main program
+main.pl
+
+Parameters -o output folder path -l sample list path (sample id library id FC id) -stp step number (1/2/3/4) -c parameter configuration file -filter whether to filter the repeated comparison reads. Here, only the repeated comparison reads on the human genome are filtered. The repeated comparison reads on the HBV genome are not filtered. However, in the result, the reads of repeated alignments on the HBV genome will be discarded, and the only aligned reads on the corresponding human genome will be retained.
+
+Step to step tutorial
+
+1st step
+
+Manually create a file in the output directory. It contains three columns of the same content, which could be sample name. Then manually create a folder named step1, and create a file named sample.list in folder step1. The location of sample.list should be step1/sample.list.
+
+2nd step
+
+perl main.pl -o -l list -stp 2 -c configuration_file
+
+Example: perl main.pl -o test2 -l list -c ConfigHPV_19 -stp 2
+
+Note: 1) After running this command, the directory for each sample will be generated under the step2 folder. A shell script for each sample will be generated under corresponding folder. These shell scripts could be manually submitted onto to the server using qsub.
+
+3rd step
+
+perl main.pl -o -l -stp 3 -c configuration_file Example: perl main.pl -o test2 -l list -c ConfigHPV_19 -stp 3 -filter
+
+Note: 1) After running this command, a folder named after the sample name will be automatically generated in step3 folder. In each sample folder, there are three scripts HBV_soap.sh, Human_soap.sh, and station.sh. These scripts could be manually delivered to the sge system using qsub. The user should run Human_virus_soap.sh first before running station.sh. 2) Run Dataproduction.sh manually to get the data production report including the data amount, data quality, sequence alignment profiles.
+
+4th step
+
+perl main.pl -o -l -stp 3 -c configuration_file -filter -fa1 -fa2 Example: perl main.pl -o test2 -l list -c ConfigHPV_19 -stp 4 -filter -fa1 hg19_hpv_mask_final.fa -fa2 hpv.fa Note: 1) Once this step is finished, a folder named after the sample name will be generated in step4 folder. There is a shell script in each directory. These scripts could be manually delivered to the SGE system using qsub.
+
+Result file and the format descript
+The path of the files of results:
+
+The file of human breakpoint: step4/*/human/ breakpoint/*human_bk.final.stp2.uniq2.final
+
+The file of virus breakpoint: step4/*/virus/breakpoint/*HBV_bk.final.stp2.uniq
+
+Format description of the results:
+
+1st column is the number of the chromosome where the breakpoint located. 2nd column is Specific position coordinates
+
+3rd column is the pair amount of left support reads
+
+4th column is the pair amount of right support reads
+
+5th column is the pair amount of discordant support reads
+
+6th column is total number of all support reads
+
+7th column is normalized pair amount of left support reads (normalized_value =support_reads_number / effective_reads_number_of_the_sample)
+
+8th column is normalized pair amount of right support reads (logarithmic) normalized value
+
+9th column is normalized pair amount of discordant support reads
+
+10th column is total number of reads (logarithmic) normalized value
+
+11th column is reads id of left support reads
+
+12th column is reads id of right support reads
+
+Advanced analysis
+After running HIVID2, use an automatic method to get graphs. If you want to get the graph one by one, please separate the script and change concrete parameters.
+
+(1) Get the breakpoint directory name:
+
+/xxx/xxx/hivid2_tumor_dir/step4
+/xxx/xxx/hivid2_normal_dir/step4
+
+Then the program will extract the breakpoint file to a new directory, which is your currently working directory.
+
+(2) Run the script automatically
+
+sh Analyse.sh
+
+You can run it step by step, and modify some parameters by yourself
+
+When all parameters have done, you can run it automatically.
